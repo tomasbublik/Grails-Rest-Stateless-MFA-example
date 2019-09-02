@@ -1,7 +1,7 @@
 package cz.bublik.security
 
+import cz.bublik.MFACodeAuthenticationFilter
 import cz.bublik.StepOneUserDetailsProviderService
-import cz.bublik.TextMessageAuthenticationFilter
 import grails.plugin.springsecurity.SpringSecurityUtils
 
 import static grails.plugin.springsecurity.SpringSecurityUtils.ifAnyGranted
@@ -19,8 +19,8 @@ class LoginController extends grails.plugin.springsecurity.LoginController {
 
     def steptwo() {
         [
-                postUrl  : "${request.contextPath}/${SpringSecurityUtils.securityConfig.textMessage.filterProcessesUrl}",
-                tokenName: TextMessageAuthenticationFilter.TEXT_MESSAGE_RESPONSE_KEY
+                postUrl  : "${request.contextPath}/${SpringSecurityUtils.securityConfig.mFACode.filterProcessesUrl}",
+                tokenName: MFACodeAuthenticationFilter.MFA_CODE_RESPONSE_KEY
         ]
 
     }

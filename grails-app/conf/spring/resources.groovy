@@ -1,6 +1,6 @@
 import cz.bublik.AuthenticationSuccessHandler
-import cz.bublik.TextMessageAuthenticationFilter
-import cz.bublik.TextMessageAuthenticationProvider
+import cz.bublik.MFACodeAuthenticationFilter
+import cz.bublik.MFACodeAuthenticationProvider
 import cz.tomas.bublik.extractors.CustomJsonPayloadCredentialsExtractor
 import cz.tomas.bublik.filters.CustomRestAuthenticationFilter
 import cz.tomas.bublik.handlers.CustomAuthenticationSuccessHandler
@@ -9,7 +9,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 
 // Place your Spring DSL code here
 beans = {
-    def conf = SpringSecurityUtils.securityConfig;
+    def conf = SpringSecurityUtils.securityConfig
 
     authenticationSuccessHandler(AuthenticationSuccessHandler) {
         it.autowire = true
@@ -24,14 +24,15 @@ beans = {
         userDetailsService = ref('stepOneUserDetailsProviderService')
     }
 
-    textMessageAuthenticationProvider(TextMessageAuthenticationProvider) {
+    mFACodeAuthenticationProvider(MFACodeAuthenticationProvider) {
         it.autowire = true
         userDetailsService = ref('userDetailsService')
     }
 
-    textMessageAuthenticationFilter(TextMessageAuthenticationFilter) {
+    mFACodeAuthenticationFilter(MFACodeAuthenticationFilter) {
         it.autowire = true
-        filterProcessesUrl = SpringSecurityUtils.securityConfig.textMessage.filterProcessesUrl
+        endpointUrl = '/api/mfa_code_message'
+        authenticationSuccessHandler = ref('restAuthenticationSuccessHandler')
     }
 
     credentialsExtractor(CustomJsonPayloadCredentialsExtractor) {
@@ -45,7 +46,6 @@ beans = {
         authenticationFailureHandler = ref('restAuthenticationFailureHandler')
         authenticationDetailsSource = ref('authenticationDetailsSource')
         credentialsExtractor = ref('credentialsExtractor')
-        /*endpointUrl = conf.rest.login.endpointUrls*/
         endpointUrl = '/api/login'
         tokenGenerator = ref('tokenGenerator')
         tokenStorageService = ref('tokenStorageService')

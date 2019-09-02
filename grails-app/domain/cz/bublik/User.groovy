@@ -1,7 +1,5 @@
 package cz.bublik
 
-import grails.plugin.springsecurity.rest.token.AccessToken
-
 class User {
 
     transient springSecurityService

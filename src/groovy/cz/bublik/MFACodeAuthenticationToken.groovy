@@ -3,12 +3,13 @@ package cz.bublik
 import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 
-class TextMessageAuthenticationToken extends AbstractAuthenticationToken {
+class MFACodeAuthenticationToken extends AbstractAuthenticationToken {
     String textMessageResponse
     Object credentials
     Object principal
+    String accessToken
 
-    TextMessageAuthenticationToken(Object principal, Object credentials, String textMessageResponse) {
+    MFACodeAuthenticationToken(Object principal, Object credentials, String textMessageResponse) {
         super(null)
         this.principal = principal
         this.credentials = credentials
@@ -16,9 +17,17 @@ class TextMessageAuthenticationToken extends AbstractAuthenticationToken {
         this.setAuthenticated(false)
     }
 
-    TextMessageAuthenticationToken(Object principal,
-                                   Object credentials,
-                                   Collection<? extends GrantedAuthority> authorities) {
+    MFACodeAuthenticationToken(Collection<? extends GrantedAuthority> authorities, String textMessageResponse, Object principal, String accessToken) {
+        super(authorities)
+        this.textMessageResponse = textMessageResponse
+        this.credentials = credentials
+        this.principal = principal
+        this.accessToken = accessToken
+    }
+
+    MFACodeAuthenticationToken(Object principal,
+                               Object credentials,
+                               Collection<? extends GrantedAuthority> authorities) {
         super(authorities)
         this.principal = principal
         this.credentials = credentials

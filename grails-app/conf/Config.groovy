@@ -134,12 +134,12 @@ grails {
             active = true
             useSecurityEventListener = true
 
-            textMessage {
-                filterProcessesUrl = '/j_spring_security_text_message'
+            mFACode {
+                filterProcessesUrl = '/api/mfa_code_message'
             }
 
             providerNames = [
-                    'textMessageAuthenticationProvider',
+                    'mFACodeAuthenticationProvider',
                     'daoAuthenticationProvider',
                     'anonymousAuthenticationProvider'
             ]
@@ -157,6 +157,7 @@ grails {
 
 grails.plugin.springsecurity.interceptUrlMap = [
         '/api/login'         : ['permitAll'],
+        '/api/home'          : ['ROLE_NORMAL'],
         '/oauth/access_token': ['permitAll'],
         '/password/**'       : ['permitAll'],
         '/docs'              : ['permitAll'],
