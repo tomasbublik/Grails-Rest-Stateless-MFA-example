@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 class CustomRestAuthenticationFilter extends RestAuthenticationFilter {
-
     CustomAuthenticationSuccessHandler mfaCodeAuthenticationSuccessHandler
 
     @Override
@@ -108,6 +107,7 @@ class CustomRestAuthenticationFilter extends RestAuthenticationFilter {
         user.token = accessToken.accessToken
         user.tokenGenerationTime = new Date()
         //and generate code 123456
+        // TODO generate a code here
         user.mfaCode = "123456"
         user = user.merge()
         user.save(failOnError: true)

@@ -6,7 +6,7 @@ import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 
-class TextMessageAuthenticationProvider implements AuthenticationProvider {
+class MFACodeAuthenticationProvider implements AuthenticationProvider {
     UserDetailsService userDetailsService
 
     /**
@@ -14,11 +14,16 @@ class TextMessageAuthenticationProvider implements AuthenticationProvider {
      * {@link org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider}
      */
     Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        TextMessageAuthenticationToken authToken = (TextMessageAuthenticationToken) authentication
+        MFACodeAuthenticationToken authToken = (MFACodeAuthenticationToken) authentication
         String username = (authToken.principal == null) ? 'NONE_PROVIDED' : authToken.name
         UserDetails user = userDetailsService.loadUserByUsername(username)
 
-        Boolean verifiedResponse = authToken.textMessageResponse == '123456'
+        def userFromDb = User.findByUsername(username)
+
+        // TODO verify the MFA code expiration here
+        // TODO load and compare the UserDetails from the stored token
+
+        Boolean verifiedResponse = authToken.textMessageResponse == userFromDb.mfaCode
 
         if (!verifiedResponse) {
             throw new WrongTextMessageResponse("Incorrect text message response from ${username}")
@@ -28,11 +33,7 @@ class TextMessageAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     protected Authentication createSuccessAuthentication(Object principal, Authentication authentication) {
-        // Ensure we return the original credentials the user supplied,
-        // so subsequent attempts are successful even with encoded passwords.
-        // Also ensure we return the original getDetails(), so that future
-        // authentication events after cache expiry contain the details
-        TextMessageAuthenticationToken result = new TextMessageAuthenticationToken(
+        MFACodeAuthenticationToken result = new MFACodeAuthenticationToken(
                 principal,
                 authentication.credentials,
                 principal.authorities)
@@ -43,6 +44,6 @@ class TextMessageAuthenticationProvider implements AuthenticationProvider {
     }
 
     boolean supports(Class<? extends Object> authentication) {
-        return (TextMessageAuthenticationToken.isAssignableFrom(authentication))
+        return (MFACodeAuthenticationToken.isAssignableFrom(authentication))
     }
 }

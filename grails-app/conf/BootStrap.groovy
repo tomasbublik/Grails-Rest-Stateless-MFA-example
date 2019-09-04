@@ -8,7 +8,7 @@ class BootStrap {
 
     def init = { servletContext ->
         SpringSecurityUtils.clientRegisterFilter(
-                'textMessageAuthenticationFilter', SecurityFilterPosition.FORM_LOGIN_FILTER.order - 50)
+                'mFACodeAuthenticationFilter', SecurityFilterPosition.FORM_LOGIN_FILTER.order - 50)
 
         Role role1 = Role.findByAuthority(Role.ROLE_NORMAL) ?: new Role(authority: Role.ROLE_NORMAL).save(failOnError: true)
         Role.list().each { println it.authority }
