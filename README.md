@@ -56,3 +56,41 @@ A user should get the authentications tokens as the response
 
 ## Workflow details
 
+This implementation is based on an extension of the REST Security plugin classes. Especially _RestAuthenticationFilter_. Follow these steps to do your own extension:
+
+####1. Create _CustomRestAuthenticationFilter_
+Locate your _resources.groovy_ file and create your own _CustomRestAuthenticationFilter_ bean:
+
+https://github.com/tomasbublik/Grails-Rest-Stateless-MFA-example/blob/733250a2d149ed173256ec9de23bf36a0ec47bc6/grails-app/conf/spring/resources.groovy#L42
+
+Don't forget to specify only a certain URL for which should the filter be applied: 
+```groovy
+endpointUrl = '/api/login'
+```
+And also create a custom _customAuthenticationSuccessHandler_ to prevent a token generation, but generate a MFA code instead.
+
+The _CustomRestAuthenticationFilter_ would be almost the same as the extended _RestAuthenticationFilter_ filter, except a few details. LEave the first part as it is, and add the following snippet into the authenticated section:
+
+```groovy
+def user = User.findByUsername(authenticationResult.principal.username)
+if (user && user.mfaEnabled) {
+    updateUser(accessToken, user)
+    mfaCodeAuthenticationSuccessHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, accessToken)
+    return
+}
+```
+
+This will cause the MFA code generation when user sent proper credentials, and also saves the generated token, timestamp and MFA code to the database. But only for those users having the MFA enabled.
+
+####2. Create _StepOneUserDetailsProviderService_
+
+This class prevents creation the user details having all the permissions. It passes the _ROLE_PRE_AUTH_ permission only. 
+
+####3. Create _MFACodeAuthenticationFilter_
+Create another extension of the _RestAuthenticationFilter_ class, but this time only for the _/api/mfa_code_message_ URL only. Pass the username and MFA code received by an SMS and sent as a POST request on the mentioned URL by a user to the _MFACodeAuthenticationProvider_:
+
+https://github.com/tomasbublik/Grails-Rest-Stateless-MFA-example/blob/733250a2d149ed173256ec9de23bf36a0ec47bc6/src/groovy/cz/bublik/MFACodeAuthenticationProvider.groovy#L16
+
+And create the authentication object base on _MFACodeAuthenticationToken_ which returned to the filter does the same steps as the first step of the proper authentication; generate and returns the access and refresh tokens.
+
+From now on, a user can authenticate himself by this token as during a one-step authentication  
